@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dev Tools Pro - 開発者向けAIツール導入支援</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #f8fafc;
+            overflow-x: hidden;
+            background: #0f172a;
+        }
+
+        /* Three.js Canvas */
+        #ai-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #334155 100%);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #3b82f6;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 0 2rem;
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            z-index: 10;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(147, 197, 253, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #93c5fd;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            color: #94a3b8;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #cbd5e1;
+            padding: 1rem 2rem;
+            border: 2px solid rgba(203, 213, 225, 0.2);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Services Section */
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Service Cards */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(51, 65, 85, 0.3));
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            font-size: 1.75rem;
+        }
+
+        .service-card h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .service-card .subtitle {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .features-list .check {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .pricing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        /* ROI Section */
+        .roi-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+            border-radius: 32px;
+            padding: 4rem;
+            margin: 4rem 0;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .roi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .roi-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Benefits Grid */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .benefit-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.3), rgba(51, 65, 85, 0.2));
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .benefit-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* AI Code Animation */
+        .code-stream {
+            position: absolute;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: rgba(59, 130, 246, 0.4);
+            animation: codeFlow 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes codeFlow {
+            0% { transform: translateY(-50px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .services-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .roi-stats { grid-template-columns: 1fr; }
+        }
+
+        /* Floating elements */
+        .floating-ai {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-30px) rotate(90deg); }
+            50% { transform: translateY(-60px) rotate(180deg); }
+            75% { transform: translateY(-30px) rotate(270deg); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="ai-canvas"></canvas>
+
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">AI Dev Tools Pro</div>
+            <ul class="nav-links">
+                <li><a href="#services">サービス</a></li>
+                <li><a href="#roi">導入効果</a></li>
+                <li><a href="#contact">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-robot"></i>
+                    <span>AI-Powered Development</span>
+                </div>
+                <h1>開発生産性を<br>10倍に加速</h1>
+                <div class="hero-subtitle">AIツール導入支援サービス</div>
+                <p>GitHub Copilot、ChatGPT、Claude等の最新AIツールを開発フローに最適化。プロフェッショナルな導入支援で、チームの開発効率を劇的に向上させます。</p>
+                <div class="cta-buttons">
+                    <button class="btn-primary">
+                        <i class="fas fa-rocket"></i>
+                        無料コンサルテーション
+                    </button>
+                    <button class="btn-secondary">
+                        <i class="fas fa-play-circle"></i>
+                        デモを見る
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="section" id="services">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">2つのサービスプラン</h2>
+                    <p class="section-subtitle">チームの規模と要件に合わせて最適なソリューションを提供</p>
+                </div>
+
+                <div class="services-grid">
+                    <!-- Professional Service -->
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3>プロフェッショナル導入支援</h3>
+                        <p class="subtitle">専門家による完全カスタマイズサポート</p>
+                        
+                        <ul class="features-list">
+                            <li><span class="check">✓</span> 現状分析とAIツール戦略立案</li>
+                            <li><span class="check">✓</span> カスタム統合・ワークフロー設計</li>
+                            <li><span class="check">✓</span> チーム向け実践トレーニング</li>
+                            <li><span class="check">✓</span> プロンプトエンジニアリング指導</li>
+                            <li><span class="check">✓</span> セキュリティ・コンプライアンス対応</li>
+                            <li><span class="check">✓</span> 3ヶ月間の運用サポート</li>
+                        </ul>
+
+                        <div class="pricing">
+                            <div class="price">¥800,000〜</div>
+                            <button class="btn-primary">詳細を見る</button>
+                        </div>
+                    </div>
+
+                    <!-- DIY Kit -->
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-toolbox"></i>
+                        </div>
+                        <h3>かんたん導入キット</h3>
+                        <p class="subtitle">即座に始められるセルフサービス型</p>
+                        
+                        <ul class="features-list">
+                            <li><span class="check">✓</span> AIツール導入ガイドブック</li>
+                            <li><span class="check">✓</span> 実用的なプロンプトテンプレート集</li>
+                            <li><span class="check">✓</span> VS Code拡張設定ファイル</li>
+                            <li><span class="check">✓</span> チーム導入チェックリスト</li>
+                            <li><span class="check">✓</span> コード品質向上テンプレート</li>
+                            <li><span class="check">✓</span> オンラインコミュニティアクセス</li>
+                        </ul>
+
+                        <div class="pricing">
+                            <div class="price">¥98,000</div>
+                            <button class="btn-primary">今すぐ購入</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROI Section -->
+        <section class="section" id="roi">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">投資対効果（ROI）</h2>
+                    <p class="section-subtitle">導入3ヶ月で投資回収、年間で大幅なコスト削減を実現</p>
+                </div>
+
+                <div class="roi-section">
+                    <div class="roi-grid">
+                        <div>
+                            <h3 style="font-size: 2rem; margin-bottom: 2rem; color: #ffffff;">典型的な改善効果</h3>
+                            <div class="roi-stats">
+                                <div class="stat-card">
+                                    <div class="stat-number">70%</div>
+                                    <div class="stat-label">コーディング時間短縮</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">85%</div>
+                                    <div class="stat-label">デバッグ効率向上</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">60%</div>
+                                    <div class="stat-label">コードレビュー時間削減</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">3x</div>
+                                    <div class="stat-label">開発速度向上</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <div style="width: 200px; height: 200px; background: linear-gradient(135deg, #10b981, #06b6d4); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 20px 50px rgba(16, 185, 129, 0.3);">
+                                <div>
+                                    <div style="font-size: 3rem; font-weight: 800; color: white;">450%</div>
+                                    <div style="color: rgba(255,255,255,0.9); font-size: 1rem;">年間ROI</div>
+                                </div>
+                            </div>
+                            <h4 style="font-size: 1.5rem; margin-bottom: 1rem; color: #ffffff;">10名チームでの年間効果</h4>
+                            <div style="font-size: 2.5rem; font-weight: 800; color: #10b981; margin-bottom: 1rem;">¥18,000,000</div>
+                            <p style="color: #94a3b8;">コスト削減 + 生産性向上効果</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benefits Grid -->
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">コード品質向上</h4>
+                        <p style="color: #94a3b8;">AIによる自動レビューとリファクタリング提案でコード品質が大幅に向上</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">チーム協調性向上</h4>
+                        <p style="color: #94a3b8;">統一されたAIツール活用でチーム間のナレッジ共有が促進</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">セキュリティ強化</h4>
+                        <p style="color: #94a3b8;">AIによる脆弱性検出とセキュアコーディングの自動化</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: #ffffff;">スキル向上支援</h4>
+                        <p style="color: #94a3b8;">AIとのペアプログラミングで開発者のスキルレベルが底上げ</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="section" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)); border-radius: 32px; margin: 4rem 2rem; text-align: center;" id="contact">
+            <div class="container">
+                <h2 style="font-size: 3rem; font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(135deg, #ffffff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">今すぐAI開発の未来を始めよう</h2>
+                <p style="font-size: 1.25rem; color: #94a3b8; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;">無料コンサルテーションで、あなたのチームに最適なAIツール導入戦略をご提案します</p>
+                
+                <div class="cta-buttons">
+                    <button class="btn-primary" style="padding: 1.25rem 3rem; font-size: 1.125rem;">
+                        <i class="fas fa-calendar-check"></i>
+                        無料相談を予約
+                    </button>
+                    <button class="btn-secondary" style="padding: 1.25rem 3rem; font-size: 1.125rem;">
+                        <i class="fas fa-download"></i>
+                        導入ガイド資料
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="background: rgba(15, 23, 42, 0.9); padding: 3rem 2rem; text-align: center; border-top: 1px solid rgba(148, 163, 184, 0.1);">
+        <div class="container">
+            <div style="margin-bottom: 2rem;">
+                <div class="logo" style="font-size: 2rem; margin-bottom: 1rem;">AI Dev Tools Pro</div>
+                <p style="color: #94a3b8;">開発チームの生産性を次の次元へ</p>
+            </div>
+            <div style="border-top: 1px solid rgba(148, 163, 184, 0.1); padding-top: 2rem;">
+                <p style="color: #64748b;">&copy; 2024 AI Dev Tools Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Three.js Neural Network Animation
+        function initAIAnimation() {
+            const canvas = document.getElementById('ai-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // Neural network nodes
+            const nodeGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const nodes = [];
+            const connections = [];
+            
+            // Create nodes in layers (neural network structure)
+            const layers = [
+                { count: 8, x: -40, color: 0x3b82f6 },
+                { count: 12, x: -20, color: 0x8b5cf6 },
+                { count: 16, x: 0, color: 0x06b6d4 },
+                { count: 12, x: 20, color: 0x8b5cf6 },
+                { count: 6, x: 40, color: 0x3b82f6 }
+            ];
+            
+            layers.forEach(layer => {
+                for (let i = 0; i < layer.count; i++) {
+                    const nodeMaterial = new THREE.MeshBasicMaterial({ 
+                        color: layer.color,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                    const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+                    
+                    node.position.x = layer.x + (Math.random() - 0.5) * 4;
+                    node.position.y = (i - layer.count / 2) * 6 + (Math.random() - 0.5) * 2;
+                    node.position.z = (Math.random() - 0.5) * 10;
+                    
+                    nodes.push(node);
+                    scene.add(node);
+                }
+            });
+            
+            // Create connections between layers
+            const lineGeometry = new THREE.BufferGeometry();
+            const linePositions = new Float32Array(nodes.length * nodes.length * 6);
+            let lineIndex = 0;
+            
+            for (let i = 0; i < nodes.length - 1; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const distance = nodes[i].position.distanceTo(nodes[j].position);
+                    if (distance < 25 && Math.random() > 0.7) {
+                        linePositions[lineIndex] = nodes[i].position.x;
+                        linePositions[lineIndex + 1] = nodes[i].position.y;
+                        linePositions[lineIndex + 2] = nodes[i].position.z;
+                        linePositions[lineIndex + 3] = nodes[j].position.x;
+                        linePositions[lineIndex + 4] = nodes[j].position.y;
+                        linePositions[lineIndex + 5] = nodes[j].position.z;
+                        lineIndex += 6;
+                    }
+                }
+            }
+            
+            lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions.slice(0, lineIndex), 3));
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.2,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+            scene.add(lines);
+            
+            // Floating AI particles
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleCount = 200;
+            const particlePositions = new Float32Array(particleCount * 3);
+            const particleVelocities = [];
+            
+            for (let i = 0; i < particleCount; i++) {
+                particlePositions[i * 3] = (Math.random() - 0.5) * 200;
+                particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+                particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                
+                particleVelocities.push({
+                    x: (Math.random() - 0.5) * 0.02,
+                    y: (Math.random() - 0.5) * 0.02,
+                    z: (Math.random() - 0.5) * 0.02
+                });
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0x06b6d4,
+                size: 1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+            
+            camera.position.z = 60;
+            
+            let time = 0;
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                time += 0.01;
+                
+                // Animate nodes
+                nodes.forEach((node, index) => {
+                    node.rotation.x += 0.01;
+                    node.rotation.y += 0.01;
+                    node.position.y += Math.sin(time + index * 0.1) * 0.02;
+                    
+                    // Pulse effect
+                    const scale = 1 + Math.sin(time * 2 + index * 0.5) * 0.2;
+                    node.scale.setScalar(scale);
+                });
+                
+                // Animate particles
+                const positions = particles.geometry.attributes.position.array;
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] += particleVelocities[i].x;
+                    positions[i * 3 + 1] += particleVelocities[i].y;
+                    positions[i * 3 + 2] += particleVelocities[i].z;
+                    
+                    // Wrap around
+                    if (positions[i * 3] > 100) positions[i * 3] = -100;
+                    if (positions[i * 3] < -100) positions[i * 3] = 100;
+                    if (positions[i * 3 + 1] > 100) positions[i * 3 + 1] = -100;
+                    if (positions[i * 3 + 1] < -100) positions[i * 3 + 1] = 100;
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+                
+                // Rotate entire scene
+                scene.rotation.y = time * 0.05;
+                scene.rotation.x = Math.sin(time * 0.03) * 0.1;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // AI Code Stream Effect
+        function createCodeStream() {
+            const aiCodeSnippets = [
+                '// AI-powered code completion',
+                'const prediction = await model.predict(input);',
+                'function generateCode(prompt) {',
+                '  return ai.complete(prompt);',
+                '}',
+                'import { ChatGPT } from "openai";',
+                'const copilot = new GitHubCopilot();',
+                'async function refactor(code) {',
+                '  return await ai.optimize(code);',
+                '}',
+                '// Machine learning integration',
+                'model.train(dataset);',
+                'const insights = ai.analyze(metrics);'
+            ];
+            
+            function createStreamElement() {
+                const element = document.createElement('div');
+                element.className = 'code-stream';
+                element.textContent = aiCodeSnippets[Math.floor(Math.random() * aiCodeSnippets.length)];
+                element.style.left = Math.random() * 100 + 'vw';
+                element.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                element.style.animationDelay = Math.random() * 2 + 's';
+                
+                document.body.appendChild(element);
+                
+                setTimeout(() => {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                }, 10000);
+            }
+            
+            setInterval(createStreamElement, 1500);
+        }
+        
+        // Add floating AI elements
+        function addFloatingAI() {
+            const sections = document.querySelectorAll('section');
+            sections.forEach((section, sectionIndex) => {
+                for (let i = 0; i < 2; i++) {
+                    const ai = document.createElement('div');
+                    ai.className = 'floating-ai';
+                    ai.innerHTML = ['🤖', '🧠', '⚡', '🚀'][Math.floor(Math.random() * 4)];
+                    ai.style.left = Math.random() * 90 + '%';
+                    ai.style.top = Math.random() * 80 + '%';
+                    ai.style.animationDelay = Math.random() * 6 + 's';
+                    ai.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                    
+                    section.style.position = 'relative';
+                    section.appendChild(ai);
+                }
+            });
+        }
+        
+        // Initialize all effects
+        document.addEventListener('DOMContentLoaded', () => {
+            initAIAnimation();
+            createCodeStream();
+            addFloatingAI();
+            
+            // Add scroll animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.service-card, .benefit-card, .stat-card').forEach(el => {
+                observer.observe(el);
+            });
+        });
+        
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
