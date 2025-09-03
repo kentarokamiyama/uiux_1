@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ja" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CI/CD導入支援サービス | Accelerate Delivery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="エンジニアリング組織のデリバリーを加速するCI/CD導入支援サービス。カスタマイズ支援とベストプラクティスキット。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script type="module">
+      import * as THREE from 'three';
+
+      // Hero 背景のアニメーション (簡易的な点群)
+      const initHeroBG = () => {
+        const canvas = document.getElementById('hero-canvas');
+        if(!canvas) return;
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        camera.position.z = 60;
+
+        const geometry = new THREE.BufferGeometry();
+        const num = 1200;
+        const positions = new Float32Array(num * 3);
+        for (let i=0;i<num;i++) {
+          positions[i*3] = (Math.random()-0.5)*160;
+          positions[i*3+1] = (Math.random()-0.5)*90;
+          positions[i*3+2] = (Math.random()-0.5)*160;
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const material = new THREE.PointsMaterial({ color: 0x4f46e5, size: 1.6, sizeAttenuation: true });
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+        let resizeObserver;
+        const onResize = () => {
+          const w = canvas.clientWidth;
+          const h = canvas.clientHeight;
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        };
+        onResize();
+        resizeObserver = new ResizeObserver(onResize);
+        resizeObserver.observe(canvas);
+
+        const animate = () => {
+          requestAnimationFrame(animate);
+          points.rotation.y += 0.0009;
+          points.rotation.x += 0.0003;
+          renderer.render(scene, camera);
+        };
+        animate();
+      };
+      window.addEventListener('DOMContentLoaded', initHeroBG);
+    </script>
+    <script>
+      // スムーススクロールフォーカス補助
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if(a){
+          const id = a.getAttribute('href').slice(1);
+          const el = document.getElementById(id);
+          if(el){
+            e.preventDefault();
+            el.scrollIntoView({behavior:'smooth'});
+          }
+        }
+      });
+    </script>
+    <script>
+      // 遅延でCTAボタンを軽くアテンション
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(()=>{
+          const cta = document.getElementById('hero-cta');
+          if(cta) cta.classList.add('ring-4','ring-indigo-400/40');
+          setTimeout(()=>cta && cta.classList.remove('ring-4','ring-indigo-400/40'), 2400);
+        }, 1800);
+      });
+    </script>
+    <script>
+      // フォーム送信(デモ) - ここで実APIにPOSTするように拡張可能
+      const submitDemoForm = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form).entries());
+        console.log('Demo request', data);
+        form.reset();
+        const msg = document.getElementById('form-msg');
+        msg.textContent = '送信しました。1営業日以内にご連絡します。';
+        msg.classList.remove('hidden');
+      };
+      window.submitDemoForm = submitDemoForm;
+    </script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <style>
+      body { font-family: 'Inter', sans-serif; }
+      #hero-canvas { width:100%; height:100%; display:block; }
+      .noise-overlay { position:absolute; inset:0; background:radial-gradient(circle at 30% 40%,rgba(99,102,241,0.25),transparent 60%), radial-gradient(circle at 70% 60%,rgba(168,85,247,0.25),transparent 65%); mix-blend-mode:screen; pointer-events:none; }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-100 tracking-tight">
+    <!-- Hero -->
+    <header class="relative min-h-screen flex flex-col">
+      <nav class="flex items-center justify-between px-6 md:px-12 py-4 backdrop-blur supports-[backdrop-filter]:bg-slate-900/50 sticky top-0 z-40">
+        <div class="font-extrabold text-indigo-400 text-xl">Accelerate CI/CD</div>
+        <ul class="hidden md:flex gap-8 text-sm font-medium">
+          <li><a href="#problems" class="hover:text-indigo-300">課題</a></li>
+          <li><a href="#services" class="hover:text-indigo-300">サービス</a></li>
+          <li><a href="#value" class="hover:text-indigo-300">価値</a></li>
+          <li><a href="#flow" class="hover:text-indigo-300">導入プロセス</a></li>
+          <li><a href="#contact" class="hover:text-indigo-300">お問い合わせ</a></li>
+        </ul>
+        <a href="#contact" class="hidden md:inline-block bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-md px-4 py-2 text-sm font-semibold shadow-lg shadow-indigo-500/30">相談する</a>
+      </nav>
+      <div class="relative flex-1 flex items-center overflow-hidden">
+        <canvas id="hero-canvas" class="absolute inset-0 -z-10"></canvas>
+        <div class="noise-overlay -z-10"></div>
+        <div class="max-w-4xl mx-auto px-6 md:px-12">
+          <h1 class="text-4xl md:text-6xl font-extrabold leading-tight bg-gradient-to-br from-indigo-300 via-indigo-100 to-fuchsia-200 text-transparent bg-clip-text drop-shadow-md">
+            デリバリー速度と品質を最速で底上げする<br class="hidden md:block"/>CI/CD導入支援
+          </h1>
+          <p class="mt-6 text-lg md:text-xl text-slate-300 max-w-2xl">現場のプラクティスと組織のガバナンスを両立。数ヶ月単位の内製検証をショートカットし、継続的デリバリーを標準状態へ。</p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-4">
+            <a id="hero-cta" href="#contact" class="group inline-flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md px-8 py-4 text-lg shadow-xl shadow-indigo-500/40 transition relative overflow-hidden">
+              <span class="relative z-10">無料相談を予約</span>
+              <span class="absolute inset-0 bg-gradient-to-r from-indigo-400/0 via-indigo-300/20 to-indigo-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+            </a>
+            <a href="#services" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded-md px-8 py-4 text-lg font-medium text-slate-200">内容を見る</a>
+          </div>
+          <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-xs md:text-sm uppercase tracking-wider text-slate-400/80">
+            <div><span class="block text-indigo-300 text-2xl md:text-3xl font-bold">60%+</span>Lead Time短縮</div>
+            <div><span class="block text-indigo-300 text-2xl md:text-3xl font-bold">90%+</span>自動テスト化</div>
+            <div><span class="block text-indigo-300 text-2xl md:text-3xl font-bold">30%+</span>障害検知高速化</div>
+            <div><span class="block text-indigo-300 text-2xl md:text-3xl font-bold">24h</span>初期セットアップ</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Problems -->
+    <section id="problems" class="py-28 bg-gradient-to-b from-slate-950 to-slate-900">
+      <div class="max-w-6xl mx-auto px-6 md:px-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-10">こうした課題はありませんか？</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-slate-800/40 border border-slate-700 rounded-xl p-6 backdrop-blur">
+            <h3 class="font-semibold text-indigo-300 mb-2">導入検証が長期化</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">ツール選定・PoC・権限調整で数ヶ月。成果が経営に伝わる前に熱量が低下。</p>
+          </div>
+          <div class="bg-slate-800/40 border border-slate-700 rounded-xl p-6 backdrop-blur">
+            <h3 class="font-semibold text-indigo-300 mb-2">属人化と設定ドリフト</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">リポジトリ毎に異なるYAML。更新・セキュリティパッチ適用が追随できない。</p>
+          </div>
+          <div class="bg-slate-800/40 border border-slate-700 rounded-xl p-6 backdrop-blur">
+            <h3 class="font-semibold text-indigo-300 mb-2">品質ゲートが形骸化</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">レビューは形式的、テストは遅く不安定。デプロイ判定が主観に依存。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="py-28 bg-slate-900/70">
+      <div class="max-w-6xl mx-auto px-6 md:px-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">提供サービス</h2>
+        <p class="text-slate-300 mb-10 max-w-3xl">現場の制約とプロダクト特性に応じて段階的な自動化と標準化を実現する2つのアプローチを用意。</p>
+        <div class="grid md:grid-cols-2 gap-10">
+          <!-- Service 1 -->
+          <div class="relative bg-gradient-to-br from-indigo-600/20 via-indigo-500/10 to-fuchsia-500/10 border border-indigo-400/30 rounded-2xl p-8 overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl"></div>
+            <h3 class="text-2xl font-bold text-indigo-200 mb-4">フルカスタマイズ導入支援</h3>
+            <ul class="space-y-3 text-sm leading-relaxed">
+              <li class="flex gap-2"><span class="text-indigo-300">◆</span>現状アセスメント（パイプライン、テスト、インフラ、組織フロー）</li>
+              <li class="flex gap-2"><span class="text-indigo-300">◆</span>ロードマップ & KPI設計（Lead Time, DORA, MTTR 他）</li>
+              <li class="flex gap-2"><span class="text-indigo-300">◆</span>IaC/パイプラインテンプレート設計（GitHub Actions / ArgoCD / Terraform 等）</li>
+              <li class="flex gap-2"><span class="text-indigo-300">◆</span>自動テスト高速化（テストピラミッド再設計・並列化・キャッシュ）</li>
+              <li class="flex gap-2"><span class="text-indigo-300">◆</span>セキュリティ/コンプライアンス統合（SAST/DAST/依存脆弱性/署名）</li>
+              <li class="flex gap-2"><span class="text-indigo-300">◆</span>エンジニアリングマネージャ/TechLead伴走コーチング</li>
+            </ul>
+            <div class="mt-6 text-xs text-indigo-300/80">実地ワークショップ / 設計レビュー / ロールアウト伴走</div>
+          </div>
+          <!-- Service 2 -->
+          <div class="relative bg-gradient-to-br from-fuchsia-600/20 via-fuchsia-500/10 to-indigo-500/10 border border-fuchsia-400/30 rounded-2xl p-8 overflow-hidden">
+            <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-3xl"></div>
+            <h3 class="text-2xl font-bold text-fuchsia-200 mb-4">かんたん導入キット</h3>
+            <ul class="space-y-3 text-sm leading-relaxed">
+              <li class="flex gap-2"><span class="text-fuchsia-300">◆</span>ベストプラクティス CI/CD テンプレート集</li>
+              <li class="flex gap-2"><span class="text-fuchsia-300">◆</span>サンプルTerraform / GitHub Actions / ArgoCD構成</li>
+              <li class="flex gap-2"><span class="text-fuchsia-300">◆</span>品質ゲート & セキュリティチェック プリセット</li>
+              <li class="flex gap-2"><span class="text-fuchsia-300">◆</span>テスト高速化設定例（並列 / キャッシュ / コンテナレイヤ）</li>
+              <li class="flex gap-2"><span class="text-fuchsia-300">◆</span>運用 Playbook & 運用Tips（障害検知 / ロールバック / KPI可視化）</li>
+              <li class="flex gap-2"><span class="text-fuchsia-300">◆</span>更新トラッキング & バージョンアップ通知</li>
+            </ul>
+            <div class="mt-6 text-xs text-fuchsia-300/80">オンボーディングQA / Slackサポート（平日）</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value -->
+    <section id="value" class="py-28 bg-slate-900/80">
+      <div class="max-w-6xl mx-auto px-6 md:px-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12">選ばれる理由</h2>
+        <div class="grid md:grid-cols-3 gap-10">
+          <div class="group relative p-6 rounded-xl bg-slate-800/40 border border-slate-700 hover:border-indigo-400/40 transition">
+            <h3 class="font-semibold text-lg mb-3 text-indigo-300">実戦的テンプレート</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">流行の羅列ではなく、失敗事例を踏まえた保守性と再現性の高い構成。</p>
+          </div>
+          <div class="group relative p-6 rounded-xl bg-slate-800/40 border border-slate-700 hover:border-indigo-400/40 transition">
+            <h3 class="font-semibold text-lg mb-3 text-indigo-300">計測指向</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">DORA / SPACE に沿った計測→改善サイクルをオペレーションに組み込み。</p>
+          </div>
+          <div class="group relative p-6 rounded-xl bg-slate-800/40 border border-slate-700 hover:border-indigo-400/40 transition">
+            <h3 class="font-semibold text-lg mb-3 text-indigo-300">デベロッパーエクスペリエンス</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">体験コストを最小化し、学習曲線を平坦化。新メンバーのTTVを短縮。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flow -->
+    <section id="flow" class="py-28 bg-gradient-to-b from-slate-900 to-slate-950">
+      <div class="max-w-6xl mx-auto px-6 md:px-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12">導入プロセス</h2>
+        <ol class="relative border-l border-slate-700 space-y-10 ml-4">
+          <li class="ml-8">
+            <span class="absolute -left-[14px] w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">1</span>
+            <h3 class="font-semibold text-indigo-300 mb-1">アセスメント</h3>
+            <p class="text-sm text-slate-300">現状ヒアリング / 指標収集 / 痛点マッピング / リスク洗い出し</p>
+          </li>
+          <li class="ml-8">
+            <span class="absolute -left-[14px] w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">2</span>
+            <h3 class="font-semibold text-indigo-300 mb-1">ロードマップ設計</h3>
+            <p class="text-sm text-slate-300">優先度付け / KPI設定 / 投資対効果試算 / ステークホルダー合意形成</p>
+          </li>
+          <li class="ml-8">
+            <span class="absolute -left-[14px] w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">3</span>
+            <h3 class="font-semibold text-indigo-300 mb-1">実装 & 自動化</h3>
+            <p class="text-sm text-slate-300">パイプライン実装 / テスト整備 / セキュリティ統合 / IaC展開</p>
+          </li>
+          <li class="ml-8">
+            <span class="absolute -left-[14px] w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">4</span>
+            <h3 class="font-semibold text-indigo-300 mb-1">計測 & 最適化</h3>
+            <p class="text-sm text-slate-300">ボトルネック分析 / 並列化 / キャッシュ / フィードバック短縮</p>
+          </li>
+          <li class="ml-8">
+            <span class="absolute -left-[14px] w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">5</span>
+            <h3 class="font-semibold text-indigo-300 mb-1">定着 & 移管</h3>
+            <p class="text-sm text-slate-300">ドキュメント化 / Playbook整備 / 標準運用化 / 振り返り</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-28 bg-slate-950">
+      <div class="max-w-3xl mx-auto px-6 md:px-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">無料相談</h2>
+        <p class="text-slate-300 mb-8">エンジニアリングマネージャ / Tech Lead からのご相談歓迎です。現状フェーズや課題感を簡単にお聞かせください。</p>
+        <form onsubmit="submitDemoForm(event)" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium mb-1">会社名</label>
+            <input required name="company" class="w-full bg-slate-800/60 border border-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/40 rounded-md px-4 py-3 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">お名前</label>
+            <input required name="name" class="w-full bg-slate-800/60 border border-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/40 rounded-md px-4 py-3 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">メールアドレス</label>
+            <input required type="email" name="email" class="w-full bg-slate-800/60 border border-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/40 rounded-md px-4 py-3 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">現状の課題 / 期待</label>
+            <textarea required name="message" rows="4" class="w-full bg-slate-800/60 border border-slate-600 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/40 rounded-md px-4 py-3 text-sm outline-none"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 hover:brightness-110 font-semibold rounded-md px-6 py-4 text-sm tracking-wide shadow-lg shadow-indigo-500/30 transition">送信する</button>
+          <p id="form-msg" class="hidden text-sm text-indigo-300 font-medium"></p>
+        </form>
+      </div>
+    </section>
+
+    <footer class="py-10 text-center text-xs text-slate-500 bg-slate-950">
+      <p>&copy; 2025 Accelerate CI/CD. All rights reserved.</p>
+    </footer>
+  </body>
+</html>
